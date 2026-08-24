@@ -12,6 +12,9 @@ compatibility_flags = ["nodejs_compat"]
 # Cloudflare Realtime SFU app "crown-and-compass" (Brian's account). Public id,
 # safe to keep here. The paired CALLS_APP_SECRET is a Worker secret, never here.
 CALLS_APP_ID = "d2c4a07da831fa50d2ed85a67155c5a7"
+# The gate validates each token by POSTing it to the member app; this worker
+# holds no signing secret of its own.
+APP_VERIFY_URL = "https://app.thecrownandcompass.org/api/meet/verify"
 # Where the gate sends anyone without a valid member token/grant.
 MEET_DENY_REDIRECT = "https://app.thecrownandcompass.org"
 
@@ -24,6 +27,7 @@ class_name = "ChatRoom"
 tag = "v1" # Should be unique for each entry
 new_classes = ["ChatRoom"]
 
-# Secrets (set out of band, never in this file):
-# - CALLS_APP_SECRET   -> Brian pastes it in the dashboard (Realtime app secret)
-# - MEET_SHARED_SECRET -> shared with app-crownandcompass, set via wrangler secret put
+# Secret (set out of band, never in this file):
+# - CALLS_APP_SECRET -> the Realtime app secret, set in the dashboard. This is
+#   the ONLY secret this worker needs; the gate holds no signing secret (it uses
+#   APP_VERIFY_URL above). Dashboard-set secrets survive `wrangler deploy`.
