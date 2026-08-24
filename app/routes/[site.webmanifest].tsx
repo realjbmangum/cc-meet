@@ -2,8 +2,8 @@ import { json } from 'react-router'
 
 export const loader = async () => {
 	return json({
-		name: 'Orange Meets',
-		short_name: 'Orange Meets',
+		name: 'Crown and Compass',
+		short_name: 'Crown and Compass',
 		icons: [
 			{
 				src: '/android-chrome-192x192.png',
