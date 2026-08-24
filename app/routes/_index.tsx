@@ -35,6 +35,7 @@ export default function Index() {
 			<div className="flex-1"></div>
 			<div className="space-y-6 sm:min-w-96">
 				<div>
+					<img src="/cc-mark-ink.png" alt="" width={52} height={52} className="mb-2 dark:invert" />
 					<h1 className="text-3xl font-bold">Crown and Compass</h1>
 					<div className="flex items-center justify-between gap-3">
 						<p className="text-sm text-zinc-500 dark:text-zinc-400">

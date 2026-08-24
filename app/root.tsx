@@ -92,34 +92,17 @@ export const links: LinksFunction = () => [
 	{ rel: 'stylesheet', href: tailwind },
 	{
 		rel: 'apple-touch-icon',
-		sizes: '180x180',
-		href: '/apple-touch-icon.png?v=orange-emoji',
+		href: '/cc-mark-ink.png',
 	},
 	{
 		rel: 'icon',
 		type: 'image/png',
-		sizes: '32x32',
-		href: '/favicon-32x32.png?v=orange-emoji',
-	},
-	{
-		rel: 'icon',
-		type: 'image/png',
-		sizes: '16x16',
-		href: '/favicon-16x16.png?v=orange-emoji',
+		href: '/cc-mark-ink.png',
 	},
 	{
 		rel: 'manifest',
 		href: '/site.webmanifest',
 		crossOrigin: 'use-credentials',
-	},
-	{
-		rel: 'mask-icon',
-		href: '/safari-pinned-tab.svg?v=orange-emoji',
-		color: '#faa339',
-	},
-	{
-		rel: 'shortcut icon',
-		href: '/favicon.ico?v=orange',
 	},
 ]
 

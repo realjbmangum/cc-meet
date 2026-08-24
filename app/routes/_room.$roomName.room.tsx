@@ -170,6 +170,13 @@ function JoinedRoom({ bugReportsEnabled }: { bugReportsEnabled: boolean }) {
 		>
 			<div className="flex flex-col h-full bg-white dark:bg-zinc-800">
 				<div className="relative flex-grow bg-black isolate">
+					<img
+						src="/cc-mark-ink.png"
+						alt=""
+						width={28}
+						height={28}
+						className="absolute top-3 left-3 z-10 opacity-60 invert pointer-events-none"
+					/>
 					<div
 						style={{ '--gap': gridGap + 'px' } as any}
 						className="absolute inset-0 flex isolate p-[--gap] gap-[--gap]"
