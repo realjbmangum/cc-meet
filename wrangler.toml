@@ -1,4 +1,5 @@
-name = "orange-meets"
+name = "crown-and-compass-meet"
+account_id = "b76b7c2d4d178fefd5f926a076480560"
 # https://developers.cloudflare.com/workers/platform/compatibility-dates
 compatibility_date = "2024-10-07"
 main = "./build/index.js"
@@ -8,10 +9,11 @@ compatibility_flags = ["nodejs_compat"]
   bucket = "./public"
 
 [vars]
-CALLS_APP_ID = "YOUR_CALLS_SFU_APP_ID_HERE"
-
-# Optional vars
-# OPENAI_MODEL_ENDPOINT = ""
+# Cloudflare Realtime SFU app "crown-and-compass" (Brian's account). Public id,
+# safe to keep here. The paired CALLS_APP_SECRET is a Worker secret, never here.
+CALLS_APP_ID = "d2c4a07da831fa50d2ed85a67155c5a7"
+# Where the gate sends anyone without a valid member token/grant.
+MEET_DENY_REDIRECT = "https://app.thecrownandcompass.org"
 
 [[durable_objects.bindings]]
 name = "rooms"
@@ -22,9 +24,6 @@ class_name = "ChatRoom"
 tag = "v1" # Should be unique for each entry
 new_classes = ["ChatRoom"]
 
-# The necessary secrets are:
-# - CALLS_APP_SECRET
-# To add secret, run `echo <VALUE> | wrangler secret put <NAME>`
-
-# Optional secrets:
-# OPENAI_API_TOKEN = ""
+# Secrets (set out of band, never in this file):
+# - CALLS_APP_SECRET   -> Brian pastes it in the dashboard (Realtime app secret)
+# - MEET_SHARED_SECRET -> shared with app-crownandcompass, set via wrangler secret put

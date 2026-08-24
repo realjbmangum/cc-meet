@@ -23,4 +23,9 @@ export type Env = {
 	OPENAI_MODEL_ENDPOINT?: string
 	OPENAI_MODEL_ID?: string
 	DASHBOARD_WORKER_URL?: string
+	// Crown & Compass gate. MEET_SHARED_SECRET is the HMAC secret shared with the
+	// member app; when set, rooms require a valid signed join token or grant.
+	// MEET_DENY_REDIRECT is where a denied visitor is sent (the member app).
+	MEET_SHARED_SECRET?: string
+	MEET_DENY_REDIRECT?: string
 }
