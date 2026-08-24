@@ -1,6 +1,5 @@
 import {
 	json,
-	redirect,
 	type LinksFunction,
 	type LoaderFunctionArgs,
 	type MetaFunction,
@@ -25,14 +24,7 @@ import { elementNotContainedByClickTarget } from './utils/elementNotContainedByC
 import getUsername from './utils/getUsername.server'
 import { safeRedirect } from './utils/safeReturnUrl'
 import { cn } from './utils/style'
-import { commitSession, getSession } from './session'
-import {
-	MEET_ACCESS_COOKIE,
-	mintRoomGrant,
-	parseCookie,
-	verifyMeetToken,
-	verifyRoomGrant,
-} from './utils/meetToken.server'
+import { meetGate } from './utils/meetGate.server'
 
 function addOneDay(date: Date): Date {
 	const result = new Date(date)
@@ -43,40 +35,11 @@ function addOneDay(date: Date): Date {
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 	const url = new URL(request.url)
 
-	// Crown & Compass gate for Watch rooms (the /watch-<id> paths). This must run
-	// before the username check below, which would otherwise bounce a valid-token
-	// member to set-username and strip their token. When MEET_SHARED_SECRET is
-	// unset (e.g. local dev) the app behaves like the upstream demo.
-	const meetSecret = context.env.MEET_SHARED_SECRET
-	const roomMatch = url.pathname.match(/^\/(watch-[^/]+)(?:\/.*)?$/)
-	if (meetSecret && roomMatch) {
-		const room = roomMatch[1]
-		const deny = context.env.MEET_DENY_REDIRECT || 'https://app.thecrownandcompass.org'
-		const t = url.searchParams.get('t')
-		const claims = t ? await verifyMeetToken(meetSecret, t) : null
-		if (claims && claims.room === room) {
-			// Fresh valid token: set the member's display name, grant room access for
-			// 3 hours, then strip the one-time token from the URL with one redirect.
-			const session = await getSession(request.headers.get('Cookie'))
-			session.set('username', claims.display_name)
-			const ttl = 3 * 60 * 60
-			const grant = await mintRoomGrant(meetSecret, room, ttl)
-			const secure = url.protocol === 'https:'
-			const headers = new Headers()
-			headers.append('Set-Cookie', await commitSession(session))
-			headers.append(
-				'Set-Cookie',
-				`${MEET_ACCESS_COOKIE}=${grant}; Path=/; Max-Age=${ttl}; HttpOnly; SameSite=Lax${secure ? '; Secure' : ''}`
-			)
-			url.searchParams.delete('t')
-			throw redirect(url.pathname + url.search, { headers })
-		}
-		const cookie = parseCookie(request.headers.get('Cookie'), MEET_ACCESS_COOKIE)
-		const grant = cookie ? await verifyRoomGrant(meetSecret, cookie) : null
-		if (!grant || grant.room !== room) {
-			throw redirect(deny)
-		}
-	}
+	// Crown & Compass gate for Watch rooms. Runs before the username check below
+	// (which would otherwise bounce a valid-token member to set-username). Lives
+	// in a .server module so its session code never reaches the client bundle.
+	const gate = await meetGate(request, context.env)
+	if (gate) throw gate
 
 	const username = await getUsername(request)
 	if (!username && url.pathname !== '/set-username') {
