@@ -5,6 +5,13 @@ compatibility_date = "2024-10-07"
 main = "./build/index.js"
 compatibility_flags = ["nodejs_compat"]
 
+# Clean public URL for the meeting app (instead of the workers.dev subdomain).
+# custom_domain = true provisions the DNS record + cert on the thecrownandcompass.org
+# zone (same account) on `wrangler deploy`. The workers.dev URL keeps working too.
+[[routes]]
+pattern = "meet.thecrownandcompass.org"
+custom_domain = true
+
 [site]
   bucket = "./public"
 
