@@ -24,6 +24,7 @@ import { elementNotContainedByClickTarget } from './utils/elementNotContainedByC
 import getUsername from './utils/getUsername.server'
 import { safeRedirect } from './utils/safeReturnUrl'
 import { cn } from './utils/style'
+import { meetGate } from './utils/meetGate.server'
 
 function addOneDay(date: Date): Date {
 	const result = new Date(date)
@@ -33,6 +34,13 @@ function addOneDay(date: Date): Date {
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 	const url = new URL(request.url)
+
+	// Crown & Compass gate for Watch rooms. Runs before the username check below
+	// (which would otherwise bounce a valid-token member to set-username). Lives
+	// in a .server module so its session code never reaches the client bundle.
+	const gate = await meetGate(request, context.env)
+	if (gate) throw gate
+
 	const username = await getUsername(request)
 	if (!username && url.pathname !== '/set-username') {
 		const redirectUrl = new URL(url)
@@ -76,7 +84,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 
 export const meta: MetaFunction = () => [
 	{
-		title: 'Orange Meets',
+		title: 'Crown and Compass',
 	},
 ]
 
@@ -84,34 +92,17 @@ export const links: LinksFunction = () => [
 	{ rel: 'stylesheet', href: tailwind },
 	{
 		rel: 'apple-touch-icon',
-		sizes: '180x180',
-		href: '/apple-touch-icon.png?v=orange-emoji',
+		href: '/cc-mark-ink.png',
 	},
 	{
 		rel: 'icon',
 		type: 'image/png',
-		sizes: '32x32',
-		href: '/favicon-32x32.png?v=orange-emoji',
-	},
-	{
-		rel: 'icon',
-		type: 'image/png',
-		sizes: '16x16',
-		href: '/favicon-16x16.png?v=orange-emoji',
+		href: '/cc-mark-ink.png',
 	},
 	{
 		rel: 'manifest',
 		href: '/site.webmanifest',
 		crossOrigin: 'use-credentials',
-	},
-	{
-		rel: 'mask-icon',
-		href: '/safari-pinned-tab.svg?v=orange-emoji',
-		color: '#faa339',
-	},
-	{
-		rel: 'shortcut icon',
-		href: '/favicon.ico?v=orange',
 	},
 ]
 
@@ -128,8 +119,8 @@ const Document: FC<{ children?: ReactNode }> = ({ children }) => {
 			<head>
 				<meta charSet="utf-8" />
 				<meta name="viewport" content="width=device-width, initial-scale=1" />
-				<meta name="apple-mobile-web-app-title" content="Orange Meets" />
-				<meta name="application-name" content="Orange Meets" />
+				<meta name="apple-mobile-web-app-title" content="Crown and Compass" />
+				<meta name="application-name" content="Crown and Compass" />
 				<meta name="msapplication-TileColor" content="#ffffff" />
 				<meta
 					name="theme-color"

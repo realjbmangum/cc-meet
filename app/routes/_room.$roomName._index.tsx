@@ -66,12 +66,19 @@ export default function Lobby() {
 		<div className="flex flex-col items-center justify-center h-full p-4">
 			<div className="flex-1"></div>
 			<div className="space-y-4 w-96">
-				<div>
-					<h1 className="text-3xl font-bold">{roomName}</h1>
+				<div className="flex flex-col items-center text-center gap-2 pb-1">
+					<img
+						src="/cc-mark-ink.png"
+						alt=""
+						width={56}
+						height={56}
+						className="dark:invert"
+					/>
+					<h1 className="text-2xl font-bold">Crown and Compass</h1>
 					<p className="text-sm text-zinc-500 dark:text-zinc-400">
 						{`${joinedUsers} ${
-							joinedUsers === 1 ? 'user' : 'users'
-						} in the room.`}{' '}
+							joinedUsers === 1 ? 'man' : 'men'
+						} in the room`}
 					</p>
 				</div>
 				<div className="relative">

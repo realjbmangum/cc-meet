@@ -44,6 +44,42 @@ export const loader = async ({ context }: LoaderFunctionArgs) => {
 		},
 	} = context
 
+	// Meeting quality is controlled in the member app (Admin -> Meeting settings).
+	// Fetch it on room load; fall back to env defaults if it is unreachable.
+	let q = {
+		bitrate: numberOrUndefined(MAX_WEBCAM_BITRATE),
+		framerate: numberOrUndefined(MAX_WEBCAM_FRAMERATE),
+		resolution: numberOrUndefined(MAX_WEBCAM_QUALITY_LEVEL),
+		audioOnly: false,
+	}
+	const settingsUrl = context.env.APP_VERIFY_URL?.replace(/\/verify\/?$/, '/settings')
+	if (settingsUrl) {
+		try {
+			// Deliberately deadlined. This is a blocking subrequest to the member
+			// app inside the room loader, so without a timeout a slow or hanging
+			// app stalls the room page for everyone trying to join. The catch
+			// below handles an error; it cannot handle slowness. These are
+			// cosmetic encoder caps and are never worth delaying a call for.
+			const res = await fetch(settingsUrl, { signal: AbortSignal.timeout(2000) })
+			if (res.ok) {
+				const d = (await res.json()) as {
+					bitrate?: number
+					framerate?: number
+					resolution?: number
+					audioOnly?: boolean
+				}
+				q = {
+					bitrate: d.audioOnly ? 60_000 : d.bitrate ?? q.bitrate,
+					framerate: d.audioOnly ? 15 : d.framerate ?? q.framerate,
+					resolution: d.audioOnly ? 240 : d.resolution ?? q.resolution,
+					audioOnly: Boolean(d.audioOnly),
+				}
+			}
+		} catch {
+			// keep the env defaults
+		}
+	}
+
 	return json({
 		userDirectoryUrl: context.env.USER_DIRECTORY_URL,
 		traceLink: TRACE_LINK,
@@ -54,9 +90,10 @@ export const loader = async ({ context }: LoaderFunctionArgs) => {
 				context.env.FEEDBACK_QUEUE &&
 				context.env.FEEDBACK_STORAGE
 		),
-		maxWebcamFramerate: numberOrUndefined(MAX_WEBCAM_FRAMERATE),
-		maxWebcamBitrate: numberOrUndefined(MAX_WEBCAM_BITRATE),
-		maxWebcamQualityLevel: numberOrUndefined(MAX_WEBCAM_QUALITY_LEVEL),
+		maxWebcamFramerate: q.framerate,
+		maxWebcamBitrate: q.bitrate,
+		maxWebcamQualityLevel: q.resolution,
+		audioOnly: q.audioOnly,
 		maxApiHistory: numberOrUndefined(MAX_API_HISTORY),
 		simulcastEnabled: EXPERIMENTAL_SIMULCAST_ENABLED === 'true',
 		e2eeEnabled: context.env.E2EE_ENABLED === 'true',

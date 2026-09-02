@@ -1,17 +1,48 @@
-name = "orange-meets"
+name = "crown-and-compass-meet"
+account_id = "b76b7c2d4d178fefd5f926a076480560"
 # https://developers.cloudflare.com/workers/platform/compatibility-dates
 compatibility_date = "2024-10-07"
 main = "./build/index.js"
 compatibility_flags = ["nodejs_compat"]
 
+# Clean public URL for the meeting app (instead of the workers.dev subdomain).
+# custom_domain = true provisions the DNS record + cert on the thecrownandcompass.org
+# zone (same account) on `wrangler deploy`. The workers.dev URL keeps working too.
+[[routes]]
+pattern = "meet.thecrownandcompass.org"
+custom_domain = true
+
 [site]
   bucket = "./public"
 
 [vars]
-CALLS_APP_ID = "YOUR_CALLS_SFU_APP_ID_HERE"
+# Cloudflare Realtime SFU app "crown-and-compass" (Brian's account). Public id,
+# safe to keep here. The paired CALLS_APP_SECRET is a Worker secret, never here.
+CALLS_APP_ID = "d2c4a07da831fa50d2ed85a67155c5a7"
+# The gate validates each token by POSTing it to the member app; this worker
+# holds no signing secret of its own.
+APP_VERIFY_URL = "https://app.thecrownandcompass.org/api/meet/verify"
+# Where the gate sends anyone without a valid member token/grant.
+MEET_DENY_REDIRECT = "https://app.thecrownandcompass.org"
 
-# Optional vars
-# OPENAI_MODEL_ENDPOINT = ""
+# TURN — REQUIRED for anyone whose network blocks UDP to the Realtime SFU.
+#
+# Media reaches the SFU over UDP. With STUN only, the call works from a
+# permissive home network and fails behind corporate/guest WiFi, symmetric NAT
+# and CGNAT (phone hotspots are the common one). The room then splits: some men
+# connect and hear each other, the rest join, appear in the roster over the
+# WebSocket, and get no audio in either direction. That was the 2026-09-02
+# meeting, and it recurs with the same people until this is set.
+#
+# Provision at Cloudflare dashboard -> Realtime -> TURN -> Create. That yields a
+# TURN Service ID (public, belongs here) and a token (a Worker secret):
+#
+#   TURN_SERVICE_ID    -> uncomment the line below, paste the id
+#   TURN_SERVICE_TOKEN -> npx wrangler secret put TURN_SERVICE_TOKEN
+#
+# BOTH are required. The id alone silently changes nothing, and so does the
+# token alone — see the two-path note in app/routes/partytracks.$.tsx.
+# TURN_SERVICE_ID = "<paste the TURN service id here>"
 
 [[durable_objects.bindings]]
 name = "rooms"
@@ -22,9 +53,7 @@ class_name = "ChatRoom"
 tag = "v1" # Should be unique for each entry
 new_classes = ["ChatRoom"]
 
-# The necessary secrets are:
-# - CALLS_APP_SECRET
-# To add secret, run `echo <VALUE> | wrangler secret put <NAME>`
-
-# Optional secrets:
-# OPENAI_API_TOKEN = ""
+# Secret (set out of band, never in this file):
+# - CALLS_APP_SECRET -> the Realtime app secret, set in the dashboard. This is
+#   the ONLY secret this worker needs; the gate holds no signing secret (it uses
+#   APP_VERIFY_URL above). Dashboard-set secrets survive `wrangler deploy`.
