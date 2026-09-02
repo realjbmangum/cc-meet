@@ -55,7 +55,12 @@ export const loader = async ({ context }: LoaderFunctionArgs) => {
 	const settingsUrl = context.env.APP_VERIFY_URL?.replace(/\/verify\/?$/, '/settings')
 	if (settingsUrl) {
 		try {
-			const res = await fetch(settingsUrl)
+			// Deliberately deadlined. This is a blocking subrequest to the member
+			// app inside the room loader, so without a timeout a slow or hanging
+			// app stalls the room page for everyone trying to join. The catch
+			// below handles an error; it cannot handle slowness. These are
+			// cosmetic encoder caps and are never worth delaying a call for.
+			const res = await fetch(settingsUrl, { signal: AbortSignal.timeout(2000) })
 			if (res.ok) {
 				const d = (await res.json()) as {
 					bitrate?: number
