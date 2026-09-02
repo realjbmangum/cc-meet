@@ -37,12 +37,16 @@ MEET_DENY_REDIRECT = "https://app.thecrownandcompass.org"
 # Provision at Cloudflare dashboard -> Realtime -> TURN -> Create. That yields a
 # TURN Service ID (public, belongs here) and a token (a Worker secret):
 #
-#   TURN_SERVICE_ID    -> uncomment the line below, paste the id
+#   TURN_SERVICE_ID    -> the id below (public, same shape as CALLS_APP_ID)
 #   TURN_SERVICE_TOKEN -> npx wrangler secret put TURN_SERVICE_TOKEN
+#
+# In Cloudflare's own curl example the ID is the path segment after /keys/ and
+# the token is the value after "Bearer" — the dashboard labels the second one
+# "API Token", which is the same thing this repo calls TURN_SERVICE_TOKEN.
 #
 # BOTH are required. The id alone silently changes nothing, and so does the
 # token alone — see the two-path note in app/routes/partytracks.$.tsx.
-# TURN_SERVICE_ID = "<paste the TURN service id here>"
+TURN_SERVICE_ID = "9061271774458ce81fcc8ae70d16e880"
 
 [[durable_objects.bindings]]
 name = "rooms"
